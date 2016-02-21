@@ -1,4 +1,5 @@
 
+
 'use strict';
 
 var PIXI = require('pixi'),
@@ -7,17 +8,15 @@ var PIXI = require('pixi'),
 
 module.exports = (function() {
 
-    var t,
+    var
         assets = {
-            mid: [{ name: 'tower-mid', url: '/assets/img/tower.png' }]
+            mid: [{ name: 'nexus-mid', url: '/assets/img/nexus.png' }]
         };
 
-    var Tower = function(opts) {
+    var Nexus = function(opts) {
 
         var _ = this;
-        this.type = 'tower';
-        this.range = 120;
-        this.vision = 0.3;
+        this.type = 'nexus';
         this.sprites = {
             bg: [],
             mid: [],
@@ -32,9 +31,8 @@ module.exports = (function() {
                 x: 0.5,
                 y: 0.5
             },
-            width: 50,
-            height: 50,
-            rotation: M.rand(0, Math.PI*2)
+            width: 100,
+            height: 100
         });
 
         for ( var sprite in assets ) {
@@ -48,16 +46,13 @@ module.exports = (function() {
         }
     };
 
-    Tower.prototype = {
+    Nexus.prototype = {
         integrate: function() {
-            // this.meathead.forEach(function(v, i) {
-            //     v.rotation += 0.01;
-            // });
         }
     };
 
     return {
-        spawn: Tower,
+        spawn: Nexus,
         assets: assets
     };
 

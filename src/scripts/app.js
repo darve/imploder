@@ -13,7 +13,8 @@ var
     input           = require('./modules/Input'),
 
     entities        = {
-        Tower: require('./entities/Tower')
+        Tower: require('./entities/Tower'),
+        Nexus: require('./entities/Nexus')
         // Mob: require('./entities/Mob')
     };
 
@@ -66,17 +67,18 @@ var
     }
 
     function spawn(entity, opts) {
-
         var obj = new entity.spawn(opts);
-
-        // // Add the object to its respective array
+        if ( !(obj.type in sprites) ) {
+            sprites[obj.type] = [];
+        }
         sprites[obj.type].push(obj);
 
-        // Add the actual sprite textures to the appropriate place.
-        for ( var i in obj.assets ) {
-            layers[i].addChild(obj.assets[i].url);
+        // Add the objects sprites to the relevant layer
+        for ( var layer in obj.sprites ) {
+            obj.sprites[layer].forEach(function(v) {
+                layers[layer].addChild(v);
+            });
         }
-
         return obj;
     }
 
@@ -88,19 +90,12 @@ var
 
         $(doc).on('click', function(e) {
             e.preventDefault();
-            var temp = spawn(entities.Tower, {
+            spawn(entities.Tower, {
                 position: {
                     x: e.pageX,
                     y: e.pageY
                 }
             });
-
-            for ( var layer in temp.sprites ) {
-                temp.sprites[layer].forEach(function(v) {
-                    layers[layer].addChild(v);
-                });
-            }
-
         });
 
         $(doc).on('touchend', function(e) {
@@ -149,6 +144,13 @@ var
                 });
             }
         }
+
+        spawn(entities.Nexus, {
+            position: {
+                x: window.innerWidth/2,
+                y: window.innerHeight/2
+            }
+        });
 
         loader.load();
     }
