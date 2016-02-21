@@ -21,8 +21,8 @@ module.exports = (function() {
         this.pos = new Vec(opts.position.x, opts.position.y);
         this.target = new Vec(opts.target.x, opts.target.y);
         this.diff = this.target.minusNew( this.pos );
-        this.distance = this.diff.magnitude();
         this.vector = new Vec( 0, -2);
+        this.health = 100;
 
         this.sprites = {
             bg: [],
@@ -45,12 +45,14 @@ module.exports = (function() {
         for ( var sprite in assets ) {
             assets[sprite].forEach(function(v, i) {
                 _.sprites[sprite].push(new PIXI.Sprite(new PIXI.Texture.fromImage(v.url)));
+                _.meathead.push(Utils.last(_.sprites[sprite]));
                 for ( var prop in opts ) {
                     Utils.last(_.sprites[sprite])[prop] = opts[prop];
-                    _.meathead.push(Utils.last(_.sprites[sprite]));
                 }
             });
         }
+
+        console.log(_.meathead);
     };
 
     Mob.prototype = {
@@ -69,6 +71,8 @@ module.exports = (function() {
 
             if ( !this.pos.isCloseTo(this.target, 10) ) {
                 this.pos.plusEq( this.vector );
+            } else {
+                this.health = 0;
             }
 
             this.meathead.forEach(function(v, i){

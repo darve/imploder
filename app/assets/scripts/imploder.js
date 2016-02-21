@@ -48,6 +48,40 @@ var
 
         loader;
 
+    window.layers = layers;
+    window.sprites = sprites;
+
+    function closest(unit, targets) {
+
+        if ( !targets.length ) return false;
+
+        var winner,
+            distance,
+            temp;
+
+        targets.forEach(function(v, i) {
+            temp = unit.pos.minusNew( v.pos );
+            if ( distance === undefined || distance >= temp.magnitude() ) {
+                distance = temp.magnitude();
+                winner = v;
+            }
+        });
+
+        return winner !== undefined ? winner : false;
+    }
+
+    function garbage() {
+        sprites.mob.forEach(function(v, index) {
+            if ( v.health <= 0 ) {
+                for ( var layer in v.sprites ) {
+                    v.sprites[layer].forEach(function(s) {
+                        layers[layer].removeChild(s);
+                    });
+                }
+                sprites.mob.splice(index, 1);
+            }
+        });
+    }
 
     function render() {
         window.requestAnimationFrame(render);
@@ -58,15 +92,19 @@ var
             then = now - (delta % interval);
             framecounter++;
 
-            for ( var sprite in sprites ) {
-                if ( sprites[sprite].length ) {
-                    sprites[sprite].forEach(function(v, i){
-                        v.integrate();
-                    });
-                }
+            if ( sprites.mob ) {
+                sprites.mob.forEach(function(v, i) {
+                    v.integrate();
+                });
             }
 
-            if ( framecounter % 240 === 0 ) {
+            if ( sprites.tower ) {
+                sprites.tower.forEach(function(v, i){
+                    v.integrate(closest(v, sprites.mob));
+                });
+            }
+
+            if ( framecounter % 2 === 0 ) {
                 spawn(entities.Mob, {
                     position: {
                         x: M.rand(0, w),
@@ -78,6 +116,9 @@ var
                     }
                 });
             }
+
+            garbage();
+
             renderer.render(stage);
         }
     }
@@ -199,8 +240,8 @@ module.exports = (function() {
         this.pos = new Vec(opts.position.x, opts.position.y);
         this.target = new Vec(opts.target.x, opts.target.y);
         this.diff = this.target.minusNew( this.pos );
-        this.distance = this.diff.magnitude();
         this.vector = new Vec( 0, -2);
+        this.health = 100;
 
         this.sprites = {
             bg: [],
@@ -223,12 +264,14 @@ module.exports = (function() {
         for ( var sprite in assets ) {
             assets[sprite].forEach(function(v, i) {
                 _.sprites[sprite].push(new PIXI.Sprite(new PIXI.Texture.fromImage(v.url)));
+                _.meathead.push(Utils.last(_.sprites[sprite]));
                 for ( var prop in opts ) {
                     Utils.last(_.sprites[sprite])[prop] = opts[prop];
-                    _.meathead.push(Utils.last(_.sprites[sprite]));
                 }
             });
         }
+
+        console.log(_.meathead);
     };
 
     Mob.prototype = {
@@ -247,6 +290,8 @@ module.exports = (function() {
 
             if ( !this.pos.isCloseTo(this.target, 10) ) {
                 this.pos.plusEq( this.vector );
+            } else {
+                this.health = 0;
             }
 
             this.meathead.forEach(function(v, i){
@@ -301,8 +346,8 @@ module.exports = (function() {
                 x: 0.5,
                 y: 0.5
             },
-            width: 100,
-            height: 100
+            width: 50,
+            height: 50
         });
 
         for ( var sprite in assets ) {
@@ -334,6 +379,7 @@ module.exports = (function() {
 
 var PIXI = require('pixi'),
     M = require('../modules/Math'),
+    Vec = require('../modules/Vec'),
     Utils = require('../modules/Utils');
 
 module.exports = (function() {
@@ -347,7 +393,8 @@ module.exports = (function() {
 
         var _ = this;
         this.type = 'tower';
-        this.range = 120;
+        this.pos = new Vec( opts.position.x, opts.position.y);
+        this.range = 400;
         this.vision = 0.3;
         this.sprites = {
             bg: [],
@@ -365,25 +412,28 @@ module.exports = (function() {
             },
             width: 50,
             height: 50,
-            rotation: M.rand(0, Math.PI*2)
         });
 
         for ( var sprite in assets ) {
             assets[sprite].forEach(function(v, i) {
                 _.sprites[sprite].push(new PIXI.Sprite(new PIXI.Texture.fromImage(v.url)));
+                _.meathead.push(Utils.last(_.sprites[sprite]));
                 for ( var prop in opts ) {
                     Utils.last(_.sprites[sprite])[prop] = opts[prop];
-                    _.meathead.push(Utils.last(_.sprites[sprite]));
                 }
             });
         }
     };
 
     Tower.prototype = {
-        integrate: function() {
-            // this.meathead.forEach(function(v, i) {
-            //     v.rotation += 0.01;
-            // });
+        integrate: function(mob) {
+            var _ = this;
+            if ( mob ) {
+                this.diff = mob.pos.minusNew( this.pos );
+                this.meathead.forEach(function(v, i) {
+                    v.rotation = _.diff.angle(true)+Math.PI/2;
+                });
+            }
         }
     };
 
@@ -394,7 +444,7 @@ module.exports = (function() {
 
 })();
 
-},{"../modules/Math":7,"../modules/Utils":8,"pixi":11}],5:[function(require,module,exports){
+},{"../modules/Math":7,"../modules/Utils":8,"../modules/Vec":9,"pixi":11}],5:[function(require,module,exports){
 
 'use strict';
 

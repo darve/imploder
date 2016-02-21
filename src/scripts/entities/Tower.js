@@ -3,6 +3,7 @@
 
 var PIXI = require('pixi'),
     M = require('../modules/Math'),
+    Vec = require('../modules/Vec'),
     Utils = require('../modules/Utils');
 
 module.exports = (function() {
@@ -16,7 +17,8 @@ module.exports = (function() {
 
         var _ = this;
         this.type = 'tower';
-        this.range = 120;
+        this.pos = new Vec( opts.position.x, opts.position.y);
+        this.range = 400;
         this.vision = 0.3;
         this.sprites = {
             bg: [],
@@ -34,25 +36,28 @@ module.exports = (function() {
             },
             width: 50,
             height: 50,
-            rotation: M.rand(0, Math.PI*2)
         });
 
         for ( var sprite in assets ) {
             assets[sprite].forEach(function(v, i) {
                 _.sprites[sprite].push(new PIXI.Sprite(new PIXI.Texture.fromImage(v.url)));
+                _.meathead.push(Utils.last(_.sprites[sprite]));
                 for ( var prop in opts ) {
                     Utils.last(_.sprites[sprite])[prop] = opts[prop];
-                    _.meathead.push(Utils.last(_.sprites[sprite]));
                 }
             });
         }
     };
 
     Tower.prototype = {
-        integrate: function() {
-            // this.meathead.forEach(function(v, i) {
-            //     v.rotation += 0.01;
-            // });
+        integrate: function(mob) {
+            var _ = this;
+            if ( mob ) {
+                this.diff = mob.pos.minusNew( this.pos );
+                this.meathead.forEach(function(v, i) {
+                    v.rotation = _.diff.angle(true)+Math.PI/2;
+                });
+            }
         }
     };
 

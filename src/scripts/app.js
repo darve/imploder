@@ -47,6 +47,40 @@ var
 
         loader;
 
+    window.layers = layers;
+    window.sprites = sprites;
+
+    function closest(unit, targets) {
+
+        if ( !targets.length ) return false;
+
+        var winner,
+            distance,
+            temp;
+
+        targets.forEach(function(v, i) {
+            temp = unit.pos.minusNew( v.pos );
+            if ( distance === undefined || distance >= temp.magnitude() ) {
+                distance = temp.magnitude();
+                winner = v;
+            }
+        });
+
+        return winner !== undefined ? winner : false;
+    }
+
+    function garbage() {
+        sprites.mob.forEach(function(v, index) {
+            if ( v.health <= 0 ) {
+                for ( var layer in v.sprites ) {
+                    v.sprites[layer].forEach(function(s) {
+                        layers[layer].removeChild(s);
+                    });
+                }
+                sprites.mob.splice(index, 1);
+            }
+        });
+    }
 
     function render() {
         window.requestAnimationFrame(render);
@@ -57,15 +91,19 @@ var
             then = now - (delta % interval);
             framecounter++;
 
-            for ( var sprite in sprites ) {
-                if ( sprites[sprite].length ) {
-                    sprites[sprite].forEach(function(v, i){
-                        v.integrate();
-                    });
-                }
+            if ( sprites.mob ) {
+                sprites.mob.forEach(function(v, i) {
+                    v.integrate();
+                });
             }
 
-            if ( framecounter % 240 === 0 ) {
+            if ( sprites.tower ) {
+                sprites.tower.forEach(function(v, i){
+                    v.integrate(closest(v, sprites.mob));
+                });
+            }
+
+            if ( framecounter % 2 === 0 ) {
                 spawn(entities.Mob, {
                     position: {
                         x: M.rand(0, w),
@@ -77,6 +115,9 @@ var
                     }
                 });
             }
+
+            garbage();
+
             renderer.render(stage);
         }
     }
