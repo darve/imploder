@@ -66,7 +66,7 @@ var
     }
 
     function spawn(entity, opts) {
-        console.log(opts);
+
         var obj = new entity.spawn(opts);
 
         // // Add the object to its respective array
@@ -88,7 +88,6 @@ var
 
         $(doc).on('click', function(e) {
             e.preventDefault();
-
             var temp = spawn(entities.Tower, {
                 position: {
                     x: e.pageX,
@@ -102,6 +101,25 @@ var
                 });
             }
 
+        });
+
+        $(doc).on('touchend', function(e) {
+            e.preventDefault();
+
+            var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0]
+
+            var temp = spawn(entities.Tower, {
+                position: {
+                    x: touch.pageX,
+                    y: touch.pageY
+                }
+            });
+
+            for ( var layer in temp.sprites ) {
+                temp.sprites[layer].forEach(function(v) {
+                    layers[layer].addChild(v);
+                });
+            }
         });
     }
 

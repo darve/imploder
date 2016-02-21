@@ -67,7 +67,7 @@ var
     }
 
     function spawn(entity, opts) {
-        console.log(opts);
+
         var obj = new entity.spawn(opts);
 
         // // Add the object to its respective array
@@ -89,7 +89,6 @@ var
 
         $(doc).on('click', function(e) {
             e.preventDefault();
-
             var temp = spawn(entities.Tower, {
                 position: {
                     x: e.pageX,
@@ -103,6 +102,25 @@ var
                 });
             }
 
+        });
+
+        $(doc).on('touchend', function(e) {
+            e.preventDefault();
+
+            var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0]
+
+            var temp = spawn(entities.Tower, {
+                position: {
+                    x: touch.pageX,
+                    y: touch.pageY
+                }
+            });
+
+            for ( var layer in temp.sprites ) {
+                temp.sprites[layer].forEach(function(v) {
+                    layers[layer].addChild(v);
+                });
+            }
         });
     }
 
@@ -166,6 +184,8 @@ module.exports = (function() {
             mid: [],
             fg: []
         };
+
+        // meathead is a straight up array of the sprites that make up this entity. We don't give no fucks about layers here son.
         this.meathead = [];
 
         opts = Utils.override(opts, {
@@ -191,9 +211,9 @@ module.exports = (function() {
 
     Tower.prototype = {
         integrate: function() {
-            this.meathead.forEach(function(v, i) {
-                v.rotation += 0.01;
-            });
+            // this.meathead.forEach(function(v, i) {
+            //     v.rotation += 0.01;
+            // });
         }
     };
 

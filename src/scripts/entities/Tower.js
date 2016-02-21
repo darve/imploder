@@ -23,6 +23,8 @@ module.exports = (function() {
             mid: [],
             fg: []
         };
+
+        // meathead is a straight up array of the sprites that make up this entity. We don't give no fucks about layers here son.
         this.meathead = [];
 
         opts = Utils.override(opts, {
@@ -48,9 +50,9 @@ module.exports = (function() {
 
     Tower.prototype = {
         integrate: function() {
-            this.meathead.forEach(function(v, i) {
-                v.rotation += 0.01;
-            });
+            // this.meathead.forEach(function(v, i) {
+            //     v.rotation += 0.01;
+            // });
         }
     };
 
