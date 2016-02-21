@@ -50,9 +50,9 @@ module.exports = (function() {
 
     Tower.prototype = {
         integrate: function() {
-            // this.meathead.forEach(function(v, i) {
-            //     v.rotation += 0.01;
-            // });
+            this.meathead.forEach(function(v, i) {
+                v.rotation += 0.01;
+            });
         }
     };
 
