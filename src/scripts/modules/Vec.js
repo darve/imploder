@@ -6,13 +6,8 @@ module.exports = (function() {
     var Vec = function(x,y) {
         this.x = x || 0;
         this.y = y || this.x || 0;
-    };
-
-    var VecConst = {
-        TO_DEGREES : 180 / Math.PI,
-        TO_RADIANS : Math.PI / 180,
-        temp : new Vec()
-    };
+    },
+    VecConst;
 
     Vec.prototype = {
 
@@ -178,6 +173,12 @@ module.exports = (function() {
         isMagGreaterThan : function (distance) {
             return(this.magnitudeSquared()>distance*distance);
         }
+    };
+
+    VecConst = {
+        TO_DEGREES : 180 / Math.PI,
+        TO_RADIANS : Math.PI / 180,
+        temp : new Vec()
     };
 
     return Vec;

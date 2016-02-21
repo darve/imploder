@@ -7,7 +7,7 @@ var PIXI = require('pixi'),
 
 module.exports = (function() {
 
-    var t,
+    var
         assets = {
             mid: [{ name: 'tower-mid', url: '/assets/img/tower.png' }]
         };

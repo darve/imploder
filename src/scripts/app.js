@@ -14,8 +14,8 @@ var
 
     entities        = {
         Tower: require('./entities/Tower'),
-        Nexus: require('./entities/Nexus')
-        // Mob: require('./entities/Mob')
+        Nexus: require('./entities/Nexus'),
+        Mob: require('./entities/Mob')
     };
 
     window.entities = entities;
@@ -32,6 +32,7 @@ var
         delta,
         then = Date.now(),
         interval = 1000/60,
+        framecounter = 0,
 
         sprites = {
             tower: [],
@@ -54,6 +55,7 @@ var
 
         if (delta > interval) {
             then = now - (delta % interval);
+            framecounter++;
 
             for ( var sprite in sprites ) {
                 if ( sprites[sprite].length ) {
@@ -61,6 +63,19 @@ var
                         v.integrate();
                     });
                 }
+            }
+
+            if ( framecounter % 240 === 0 ) {
+                spawn(entities.Mob, {
+                    position: {
+                        x: M.rand(0, w),
+                        y: M.rand(0, h)
+                    },
+                    target: {
+                        x: sprites.nexus[0].pos.x,
+                        y: sprites.nexus[0].pos.y
+                    }
+                });
             }
             renderer.render(stage);
         }

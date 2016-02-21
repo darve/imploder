@@ -4,6 +4,7 @@
 
 var PIXI = require('pixi'),
     M = require('../modules/Math'),
+    Vec = require('../modules/Vec'),
     Utils = require('../modules/Utils');
 
 module.exports = (function() {
@@ -17,6 +18,7 @@ module.exports = (function() {
 
         var _ = this;
         this.type = 'nexus';
+        this.pos = new Vec(opts.position.x, opts.position.y);
         this.sprites = {
             bg: [],
             mid: [],

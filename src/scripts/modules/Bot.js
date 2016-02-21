@@ -17,7 +17,6 @@ module.exports = (function() {
 
         _.diff = _.target.minusNew( _.pos );
         _.distance = _.diff.magnitude();
-        // _.vector = _.pos.minusNew(_.target).normaliseNew().multiplyEq(3);
         _.vector = new Vec( (Math.random() * 2)-1, (Math.random() * 2)-1 ).normalise().multiplyEq(6);
         _.speed = speed;
 
