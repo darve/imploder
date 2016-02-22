@@ -20,6 +20,10 @@ module.exports = (function() {
         this.pos = new Vec( opts.position.x, opts.position.y);
         this.range = 400;
         this.vision = 0.3;
+
+        this.attackspeed = 30;
+        this.lastattack = 0;
+
         this.sprites = {
             bg: [],
             mid: [],
@@ -34,8 +38,8 @@ module.exports = (function() {
                 x: 0.5,
                 y: 0.5
             },
-            width: 50,
-            height: 50,
+            width: 32,
+            height: 32,
         });
 
         for ( var sprite in assets ) {
@@ -51,6 +55,18 @@ module.exports = (function() {
 
     Tower.prototype = {
         integrate: function(mob) {
+
+            /**
+             *
+
+var a = new Vec(0, -1)
+undefined
+var b = new Vec(-1, 0)
+undefined
+Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x)
+4.71238898038469
+             */
+
             var _ = this;
             if ( mob ) {
                 this.diff = mob.pos.minusNew( this.pos );

@@ -19,7 +19,9 @@ var
         Mob: require('./entities/Mob')
     };
 
+    window.M = M;
     window.entities = entities;
+    window.Vec = Vec;
 
 (function(win, doc, c) {
 
@@ -104,7 +106,7 @@ var
                 });
             }
 
-            if ( framecounter % 2 === 0 ) {
+            if ( framecounter % 240 === 0 ) {
                 spawn(entities.Mob, {
                     position: {
                         x: M.rand(0, w),
@@ -240,6 +242,7 @@ module.exports = (function() {
         this.pos = new Vec(opts.position.x, opts.position.y);
         this.target = new Vec(opts.target.x, opts.target.y);
         this.diff = this.target.minusNew( this.pos );
+        this.turnspeed = 0.02;
         this.vector = new Vec( 0, -2);
         this.health = 100;
 
@@ -257,8 +260,8 @@ module.exports = (function() {
                 x: 0.5,
                 y: 0.5
             },
-            width: 24,
-            height: 41
+            width: 20,
+            height: 33
         });
 
         for ( var sprite in assets ) {
@@ -271,22 +274,31 @@ module.exports = (function() {
             });
         }
 
-        console.log(_.meathead);
     };
 
     Mob.prototype = {
         integrate: function() {
-            var _ = this;
-            this.diff = this.target.minusNew( this.pos );
-            this.dotDiff = M.diff(this.vector.normaliseNew().dot( this.diff.normaliseNew() ), 1);
-            this.dotTest = M.diff(this.vector.normaliseNew().rotate(0.02, true).dot( this.diff.normaliseNew() ), 1);
-            // console.log(this.vector.normaliseNew().dot(this.diff.normaliseNew() ));
-            // debugger;
-            if ( this.dotDiff <= this.dotTest ) {
-                this.vector.rotate(-0.02, true);
-            } else {
-                this.vector.rotate(0.02, true);
-            }
+            var _ = this,
+                vecnorm = this.vector.normaliseNew(),
+                diffnorm = this.target.minusNew( this.pos ).normaliseNew();
+
+            // The closer to 0 we get, the closer we are to being on target.
+            this.dot = M.diff(vecnorm.dot( diffnorm ), 1);
+
+            // If we are pointing very very close to our target, FINISH HIM
+            // if ( Math.abs(M.diff(this.dot, 0)) < 0.0001 ) {
+            //     this.vector = this.target.minusNew( this.pos ).normalise().multiplyEq(2);
+            // }
+            // If we are not pointing at our target
+            // if ( this.dot !== 0 ) {
+
+                this.dotTest = M.diff(vecnorm.rotate(this.turnspeed, true).dot( diffnorm ), 1);
+                if ( this.dot <= this.dotTest ) {
+                    this.vector.rotate(-this.turnspeed, true);
+                } else {
+                    this.vector.rotate(this.turnspeed, true);
+                }
+            // }
 
             if ( !this.pos.isCloseTo(this.target, 10) ) {
                 this.pos.plusEq( this.vector );
@@ -324,7 +336,7 @@ module.exports = (function() {
 
     var
         assets = {
-            mid: [{ name: 'nexus-mid', url: '/assets/img/nexus.png' }]
+            fg: [{ name: 'nexus-fg', url: '/assets/img/nexus.png' }]
         };
 
     var Nexus = function(opts) {
@@ -396,6 +408,10 @@ module.exports = (function() {
         this.pos = new Vec( opts.position.x, opts.position.y);
         this.range = 400;
         this.vision = 0.3;
+
+        this.attackspeed = 30;
+        this.lastattack = 0;
+
         this.sprites = {
             bg: [],
             mid: [],
@@ -410,8 +426,8 @@ module.exports = (function() {
                 x: 0.5,
                 y: 0.5
             },
-            width: 50,
-            height: 50,
+            width: 32,
+            height: 32,
         });
 
         for ( var sprite in assets ) {
@@ -427,6 +443,18 @@ module.exports = (function() {
 
     Tower.prototype = {
         integrate: function(mob) {
+
+            /**
+             *
+
+var a = new Vec(0, -1)
+undefined
+var b = new Vec(-1, 0)
+undefined
+Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x)
+4.71238898038469
+             */
+
             var _ = this;
             if ( mob ) {
                 this.diff = mob.pos.minusNew( this.pos );
@@ -899,8 +927,8 @@ module.exports = (function() {
 module.exports = (function() {
 
     var Vec = function(x,y) {
-        this.x = x || 0;
-        this.y = y || this.x || 0;
+        this.x = x;
+        this.y = y;
     },
     VecConst;
 
@@ -1038,6 +1066,15 @@ module.exports = (function() {
             this.y= (VecConst.temp.x*sinRY)+(VecConst.temp.y*cosRY);
 
             return this;
+        },
+
+        rotateTowards : function( target, amount ) {
+            var a = this.normaliseNew(),
+                b = target.normaliseNew(),
+                angle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
+
+                console.log(angle);
+                debugger;
         },
 
         equals : function (v) {

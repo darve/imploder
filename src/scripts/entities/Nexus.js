@@ -11,7 +11,7 @@ module.exports = (function() {
 
     var
         assets = {
-            mid: [{ name: 'nexus-mid', url: '/assets/img/nexus.png' }]
+            fg: [{ name: 'nexus-fg', url: '/assets/img/nexus.png' }]
         };
 
     var Nexus = function(opts) {

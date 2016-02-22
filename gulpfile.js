@@ -56,6 +56,7 @@ require('es6-promise').polyfill();
 gulp.task('scripts', ['jshint'], function () {
 
     return browserify({ entries: './src/scripts/app.js', noParse: ['./src/vendor/pixi.min.js'], debug: true })
+        // .add('./src/vendor/soundjs.min.js')
         .bundle()
         .pipe(source('imploder.js'))
         .pipe(buffer())

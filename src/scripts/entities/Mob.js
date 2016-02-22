@@ -21,6 +21,7 @@ module.exports = (function() {
         this.pos = new Vec(opts.position.x, opts.position.y);
         this.target = new Vec(opts.target.x, opts.target.y);
         this.diff = this.target.minusNew( this.pos );
+        this.turnspeed = 0.02;
         this.vector = new Vec( 0, -2);
         this.health = 100;
 
@@ -38,8 +39,8 @@ module.exports = (function() {
                 x: 0.5,
                 y: 0.5
             },
-            width: 24,
-            height: 41
+            width: 20,
+            height: 33
         });
 
         for ( var sprite in assets ) {
@@ -52,22 +53,31 @@ module.exports = (function() {
             });
         }
 
-        console.log(_.meathead);
     };
 
     Mob.prototype = {
         integrate: function() {
-            var _ = this;
-            this.diff = this.target.minusNew( this.pos );
-            this.dotDiff = M.diff(this.vector.normaliseNew().dot( this.diff.normaliseNew() ), 1);
-            this.dotTest = M.diff(this.vector.normaliseNew().rotate(0.02, true).dot( this.diff.normaliseNew() ), 1);
-            // console.log(this.vector.normaliseNew().dot(this.diff.normaliseNew() ));
-            // debugger;
-            if ( this.dotDiff <= this.dotTest ) {
-                this.vector.rotate(-0.02, true);
-            } else {
-                this.vector.rotate(0.02, true);
-            }
+            var _ = this,
+                vecnorm = this.vector.normaliseNew(),
+                diffnorm = this.target.minusNew( this.pos ).normaliseNew();
+
+            // The closer to 0 we get, the closer we are to being on target.
+            this.dot = M.diff(vecnorm.dot( diffnorm ), 1);
+
+            // If we are pointing very very close to our target, FINISH HIM
+            // if ( Math.abs(M.diff(this.dot, 0)) < 0.0001 ) {
+            //     this.vector = this.target.minusNew( this.pos ).normalise().multiplyEq(2);
+            // }
+            // If we are not pointing at our target
+            // if ( this.dot !== 0 ) {
+
+                this.dotTest = M.diff(vecnorm.rotate(this.turnspeed, true).dot( diffnorm ), 1);
+                if ( this.dot <= this.dotTest ) {
+                    this.vector.rotate(-this.turnspeed, true);
+                } else {
+                    this.vector.rotate(this.turnspeed, true);
+                }
+            // }
 
             if ( !this.pos.isCloseTo(this.target, 10) ) {
                 this.pos.plusEq( this.vector );

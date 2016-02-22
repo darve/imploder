@@ -18,7 +18,9 @@ var
         Mob: require('./entities/Mob')
     };
 
+    window.M = M;
     window.entities = entities;
+    window.Vec = Vec;
 
 (function(win, doc, c) {
 
@@ -103,7 +105,7 @@ var
                 });
             }
 
-            if ( framecounter % 2 === 0 ) {
+            if ( framecounter % 240 === 0 ) {
                 spawn(entities.Mob, {
                     position: {
                         x: M.rand(0, w),

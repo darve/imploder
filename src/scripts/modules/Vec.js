@@ -4,8 +4,8 @@
 module.exports = (function() {
 
     var Vec = function(x,y) {
-        this.x = x || 0;
-        this.y = y || this.x || 0;
+        this.x = x;
+        this.y = y;
     },
     VecConst;
 
@@ -143,6 +143,15 @@ module.exports = (function() {
             this.y= (VecConst.temp.x*sinRY)+(VecConst.temp.y*cosRY);
 
             return this;
+        },
+
+        rotateTowards : function( target, amount ) {
+            var a = this.normaliseNew(),
+                b = target.normaliseNew(),
+                angle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
+
+                console.log(angle);
+                debugger;
         },
 
         equals : function (v) {
