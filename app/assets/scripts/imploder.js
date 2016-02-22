@@ -278,39 +278,38 @@ module.exports = (function() {
 
     Mob.prototype = {
         integrate: function() {
-            var _ = this,
-                vecnorm = this.vector.normaliseNew(),
-                diffnorm = this.target.minusNew( this.pos ).normaliseNew();
 
-            // The closer to 0 we get, the closer we are to being on target.
-            this.dot = M.diff(vecnorm.dot( diffnorm ), 1);
+            var _ = this;
 
-            // If we are pointing very very close to our target, FINISH HIM
-            // if ( Math.abs(M.diff(this.dot, 0)) < 0.0001 ) {
-            //     this.vector = this.target.minusNew( this.pos ).normalise().multiplyEq(2);
-            // }
-            // If we are not pointing at our target
-            // if ( this.dot !== 0 ) {
-
-                this.dotTest = M.diff(vecnorm.rotate(this.turnspeed, true).dot( diffnorm ), 1);
-                if ( this.dot <= this.dotTest ) {
-                    this.vector.rotate(-this.turnspeed, true);
-                } else {
-                    this.vector.rotate(this.turnspeed, true);
-                }
-            // }
-
-            if ( !this.pos.isCloseTo(this.target, 10) ) {
-                this.pos.plusEq( this.vector );
-            } else {
-                this.health = 0;
-            }
-
+            this.turn();
+            this.move();
             this.meathead.forEach(function(v, i){
                 v.position.x = _.pos.x;
                 v.position.y = _.pos.y;
                 v.rotation = _.vector.angle(true)+Math.PI/2;
             });
+        },
+
+        turn: function() {
+
+            this.vecnorm = this.vector.normaliseNew();
+            this.diffnorm = this.target.minusNew( this.pos ).normaliseNew();
+            this.dot = M.diff(this.vecnorm.dot( this.diffnorm ), 1);
+            this.dotTest = M.diff(this.vecnorm.rotate(this.turnspeed, true).dot( this.diffnorm ), 1);
+
+            if ( this.dot <= this.dotTest ) {
+                this.vector.rotate(-this.turnspeed, true);
+            } else {
+                this.vector.rotate(this.turnspeed, true);
+            }
+        },
+
+        move: function() {
+            if ( !this.pos.isCloseTo(this.target, 10) ) {
+                this.pos.plusEq( this.vector );
+            } else {
+                this.health = 0;
+            }
         }
     };
 
@@ -408,7 +407,8 @@ module.exports = (function() {
         this.pos = new Vec( opts.position.x, opts.position.y);
         this.range = 400;
         this.vision = 0.3;
-
+        this.vector = new Vec(0, -1);
+        this.turnspeed = 0.06;
         this.attackspeed = 30;
         this.lastattack = 0;
 
@@ -443,27 +443,30 @@ module.exports = (function() {
 
     Tower.prototype = {
         integrate: function(mob) {
-
-            /**
-             *
-
-var a = new Vec(0, -1)
-undefined
-var b = new Vec(-1, 0)
-undefined
-Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x)
-4.71238898038469
-             */
-
             var _ = this;
             if ( mob ) {
-                this.diff = mob.pos.minusNew( this.pos );
+                this.target = mob.pos.clone();
+                this.turn();
                 this.meathead.forEach(function(v, i) {
-                    v.rotation = _.diff.angle(true)+Math.PI/2;
+                    v.rotation = _.vector.angle(true)+Math.PI/2;
                 });
+            }
+        },
+        turn: function() {
+
+            this.vecnorm = this.vector.normaliseNew();
+            this.diffnorm = this.target.minusNew( this.pos ).normaliseNew();
+            this.dot = M.diff(this.vecnorm.dot( this.diffnorm ), 1);
+            this.dotTest = M.diff(this.vecnorm.rotate(this.turnspeed, true).dot( this.diffnorm ), 1);
+
+            if ( this.dot <= this.dotTest ) {
+                this.vector.rotate(-this.turnspeed, true);
+            } else {
+                this.vector.rotate(this.turnspeed, true);
             }
         }
     };
+
 
     return {
         spawn: Tower,
@@ -1072,9 +1075,6 @@ module.exports = (function() {
             var a = this.normaliseNew(),
                 b = target.normaliseNew(),
                 angle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
-
-                console.log(angle);
-                debugger;
         },
 
         equals : function (v) {

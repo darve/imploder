@@ -149,9 +149,6 @@ module.exports = (function() {
             var a = this.normaliseNew(),
                 b = target.normaliseNew(),
                 angle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
-
-                console.log(angle);
-                debugger;
         },
 
         equals : function (v) {

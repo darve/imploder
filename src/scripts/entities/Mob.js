@@ -57,39 +57,38 @@ module.exports = (function() {
 
     Mob.prototype = {
         integrate: function() {
-            var _ = this,
-                vecnorm = this.vector.normaliseNew(),
-                diffnorm = this.target.minusNew( this.pos ).normaliseNew();
 
-            // The closer to 0 we get, the closer we are to being on target.
-            this.dot = M.diff(vecnorm.dot( diffnorm ), 1);
+            var _ = this;
 
-            // If we are pointing very very close to our target, FINISH HIM
-            // if ( Math.abs(M.diff(this.dot, 0)) < 0.0001 ) {
-            //     this.vector = this.target.minusNew( this.pos ).normalise().multiplyEq(2);
-            // }
-            // If we are not pointing at our target
-            // if ( this.dot !== 0 ) {
-
-                this.dotTest = M.diff(vecnorm.rotate(this.turnspeed, true).dot( diffnorm ), 1);
-                if ( this.dot <= this.dotTest ) {
-                    this.vector.rotate(-this.turnspeed, true);
-                } else {
-                    this.vector.rotate(this.turnspeed, true);
-                }
-            // }
-
-            if ( !this.pos.isCloseTo(this.target, 10) ) {
-                this.pos.plusEq( this.vector );
-            } else {
-                this.health = 0;
-            }
-
+            this.turn();
+            this.move();
             this.meathead.forEach(function(v, i){
                 v.position.x = _.pos.x;
                 v.position.y = _.pos.y;
                 v.rotation = _.vector.angle(true)+Math.PI/2;
             });
+        },
+
+        turn: function() {
+
+            this.vecnorm = this.vector.normaliseNew();
+            this.diffnorm = this.target.minusNew( this.pos ).normaliseNew();
+            this.dot = M.diff(this.vecnorm.dot( this.diffnorm ), 1);
+            this.dotTest = M.diff(this.vecnorm.rotate(this.turnspeed, true).dot( this.diffnorm ), 1);
+
+            if ( this.dot <= this.dotTest ) {
+                this.vector.rotate(-this.turnspeed, true);
+            } else {
+                this.vector.rotate(this.turnspeed, true);
+            }
+        },
+
+        move: function() {
+            if ( !this.pos.isCloseTo(this.target, 10) ) {
+                this.pos.plusEq( this.vector );
+            } else {
+                this.health = 0;
+            }
         }
     };
 

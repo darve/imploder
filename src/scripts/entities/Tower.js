@@ -20,7 +20,8 @@ module.exports = (function() {
         this.pos = new Vec( opts.position.x, opts.position.y);
         this.range = 400;
         this.vision = 0.3;
-
+        this.vector = new Vec(0, -1);
+        this.turnspeed = 0.06;
         this.attackspeed = 30;
         this.lastattack = 0;
 
@@ -55,27 +56,30 @@ module.exports = (function() {
 
     Tower.prototype = {
         integrate: function(mob) {
-
-            /**
-             *
-
-var a = new Vec(0, -1)
-undefined
-var b = new Vec(-1, 0)
-undefined
-Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x)
-4.71238898038469
-             */
-
             var _ = this;
             if ( mob ) {
-                this.diff = mob.pos.minusNew( this.pos );
+                this.target = mob.pos.clone();
+                this.turn();
                 this.meathead.forEach(function(v, i) {
-                    v.rotation = _.diff.angle(true)+Math.PI/2;
+                    v.rotation = _.vector.angle(true)+Math.PI/2;
                 });
+            }
+        },
+        turn: function() {
+
+            this.vecnorm = this.vector.normaliseNew();
+            this.diffnorm = this.target.minusNew( this.pos ).normaliseNew();
+            this.dot = M.diff(this.vecnorm.dot( this.diffnorm ), 1);
+            this.dotTest = M.diff(this.vecnorm.rotate(this.turnspeed, true).dot( this.diffnorm ), 1);
+
+            if ( this.dot <= this.dotTest ) {
+                this.vector.rotate(-this.turnspeed, true);
+            } else {
+                this.vector.rotate(this.turnspeed, true);
             }
         }
     };
+
 
     return {
         spawn: Tower,
