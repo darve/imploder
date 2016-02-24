@@ -171,10 +171,10 @@ var
             });
         }
 
-        if ( obj.range ) {
-            debug.beginFill(0xFFFFFF, 0.2);
-            debug.drawCircle(obj.pos.x, obj.pos.y, obj.range);
-        }
+        // if ( obj.range ) {
+        //     debug.beginFill(0xFFFFFF, 0.2);
+        //     debug.drawCircle(obj.pos.x, obj.pos.y, obj.range);
+        // }
 
         return obj;
     }

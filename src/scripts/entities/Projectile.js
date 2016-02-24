@@ -20,7 +20,7 @@ module.exports = (function() {
 
         this.pos = new Vec(opts.position.x, opts.position.y);
         this.target = opts.target;
-        this.diff = this.target.minusNew( this.pos );
+        this.diff = this.target.pos.minusNew( this.pos );
         this.turnspeed = 0.08;
         this.speed = 4;
         this.acceleration = 1.02;
@@ -76,9 +76,8 @@ module.exports = (function() {
         },
 
         turn: function() {
-
             this.vecnorm = this.vector.normaliseNew();
-            this.diffnorm = this.target.minusNew( this.pos ).normaliseNew();
+            this.diffnorm = this.target.pos.minusNew( this.pos ).normaliseNew();
             this.dot = M.diff(this.vecnorm.dot( this.diffnorm ), 1);
             this.dotTest = M.diff(this.vecnorm.rotate(this.turnspeed, true).dot( this.diffnorm ), 1);
 
@@ -90,11 +89,12 @@ module.exports = (function() {
         },
 
         move: function() {
-            // if ( !this.pos.isCloseTo(this.target, 10) ) {
+            if ( !this.pos.isCloseTo(this.target.pos, 10) ) {
                 this.pos.plusEq( this.vector.multiplyEq(this.acceleration) );
-            // } else {
-                // this.health = 0;
-            // }
+            } else {
+                this.health = 0;
+                this.target.health = 0;
+            }
         }
     };
 

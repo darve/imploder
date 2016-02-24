@@ -26,7 +26,7 @@ module.exports = (function() {
         this.vision = 0.3;
         this.vector = new Vec(0, -1);
         this.turnspeed = 0.06;
-        this.attackspeed = 30;
+        this.attackspeed = 10;
         this.lastattack = 0;
         this.firing = false;
         this.barrels = [];
@@ -92,7 +92,7 @@ module.exports = (function() {
                         this.firing = {
                             barrel: this.barrels[this.lastbarrel],
                             vector: this.vector.clone(),
-                            target: this.target
+                            target: closest.winner
                         }
                     }
                 }
