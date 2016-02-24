@@ -11,19 +11,26 @@ module.exports = (function() {
     var
         assets = {
             mid: [{ name: 'tower-mid', url: '/assets/img/tower.png' }]
-        };
+        },
+        barrels = [
+            new Vec(6, 0),
+            new Vec(26, 0)
+        ];
 
     var Tower = function(opts) {
 
         var _ = this;
         this.type = 'tower';
-        this.pos = new Vec( opts.position.x, opts.position.y);
-        this.range = 400;
+        this.pos = new Vec( opts.position.x, opts.position.y );
+        this.range = 200;
         this.vision = 0.3;
         this.vector = new Vec(0, -1);
         this.turnspeed = 0.06;
         this.attackspeed = 30;
         this.lastattack = 0;
+        this.firing = false;
+        this.barrels = [];
+        this.lastbarrel = 0;
 
         this.sprites = {
             bg: [],
@@ -52,20 +59,49 @@ module.exports = (function() {
                 }
             });
         }
+
+        barrels.forEach(function(b, i) {
+            var temp = new PIXI.Sprite( new PIXI.Texture.fromImage('/assets/img/transparent.png'))
+            temp.anchor.x = 0.5;
+            temp.anchor.y = 0.5;
+            temp.width = 1;
+            temp.height = 1;
+            temp.position.x = barrels[i].x;
+            temp.position.y = barrels[i].y;
+
+            _.barrels.push(temp);
+            Utils.last(_.meathead).addChild(_.barrels[i]);
+        });
     };
 
     Tower.prototype = {
-        integrate: function(mob) {
-            var _ = this;
-            if ( mob ) {
-                this.target = mob.pos.clone();
-                this.turn();
-                this.meathead.forEach(function(v, i) {
-                    v.rotation = _.vector.angle(true)+Math.PI/2;
-                });
+        integrate: function(closest) {
+            this.firing = false;
+
+            if ( this.lastattack > 0 ) {
+                this.lastattack--;
             }
+
+            if ( closest ) {
+                this.target = closest.winner.pos.clone();
+                if ( closest.distance <= this.range ){
+                    this.turn();
+
+                    if ( this.lastattack === 0 ) {
+                        this.lastattack = this.attackspeed;
+                        this.firing = {
+                            barrel: this.barrels[this.lastbarrel],
+                            vector: this.vector.clone(),
+                            target: this.target
+                        }
+                    }
+                }
+            }
+
+            // console.log(this.lastattack, this.firing);
         },
         turn: function() {
+            var _ = this;
 
             this.vecnorm = this.vector.normaliseNew();
             this.diffnorm = this.target.minusNew( this.pos ).normaliseNew();
@@ -77,9 +113,12 @@ module.exports = (function() {
             } else {
                 this.vector.rotate(this.turnspeed, true);
             }
+
+            this.meathead.forEach(function(v, i) {
+                v.rotation = _.vector.angle(true)+Math.PI/2;
+            });
         }
     };
-
 
     return {
         spawn: Tower,

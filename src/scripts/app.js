@@ -15,7 +15,8 @@ var
     entities        = {
         Tower: require('./entities/Tower'),
         Nexus: require('./entities/Nexus'),
-        Mob: require('./entities/Mob')
+        Mob: require('./entities/Mob'),
+        Projectile: require('./entities/Projectile')
     };
 
     window.M = M;
@@ -38,7 +39,8 @@ var
 
         sprites = {
             tower: [],
-            mob: []
+            mob: [],
+            projectile: []
         },
 
         layers = {
@@ -46,6 +48,8 @@ var
             mid: new PIXI.Graphics(),
             fg: new PIXI.Graphics()
         },
+
+        debug = new PIXI.Graphics(),
 
         loader;
 
@@ -68,7 +72,7 @@ var
             }
         });
 
-        return winner !== undefined ? winner : false;
+        return winner !== undefined ? { winner: winner, distance: distance } : false;
     }
 
     function garbage() {
@@ -82,6 +86,16 @@ var
                 sprites.mob.splice(index, 1);
             }
         });
+        sprites.projectile.forEach(function(v, index) {
+            if ( v.health <= 0 ) {
+                for ( var layer in v.sprites ) {
+                    v.sprites[layer].forEach(function(s) {
+                        layers[layer].removeChild(s);
+                    });
+                }
+                sprites.projectile.splice(index, 1);
+            }
+        });
     }
 
     function render() {
@@ -93,6 +107,12 @@ var
             then = now - (delta % interval);
             framecounter++;
 
+            if ( sprites.projectile ) {
+                sprites.projectile.forEach(function(v, i) {
+                    v.integrate();
+                });
+            }
+
             if ( sprites.mob ) {
                 sprites.mob.forEach(function(v, i) {
                     v.integrate();
@@ -102,10 +122,23 @@ var
             if ( sprites.tower ) {
                 sprites.tower.forEach(function(v, i){
                     v.integrate(closest(v, sprites.mob));
+                    if ( v.firing !== false ) {
+                        // console.log(v.firing);
+                        var pos = v.firing.barrel.toGlobal(stage);
+                        spawn(entities.Projectile, {
+                            position: {
+                                x: pos.x,
+                                y: pos.y
+                            },
+                            target: v.firing.target,
+                            vector: v.firing.vector
+                        });
+                    }
                 });
             }
 
-            if ( framecounter % 240 === 0 ) {
+
+            if ( framecounter % 100 === 0 ) {
                 spawn(entities.Mob, {
                     position: {
                         x: M.rand(0, w),
@@ -137,6 +170,12 @@ var
                 layers[layer].addChild(v);
             });
         }
+
+        if ( obj.range ) {
+            debug.beginFill(0xFFFFFF, 0.2);
+            debug.drawCircle(obj.pos.x, obj.pos.y, obj.range);
+        }
+
         return obj;
     }
 
@@ -158,21 +197,13 @@ var
 
         $(doc).on('touchend', function(e) {
             e.preventDefault();
-
             var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0]
-
             var temp = spawn(entities.Tower, {
                 position: {
                     x: touch.pageX,
                     y: touch.pageY
                 }
             });
-
-            for ( var layer in temp.sprites ) {
-                temp.sprites[layer].forEach(function(v) {
-                    layers[layer].addChild(v);
-                });
-            }
         });
     }
 
@@ -185,6 +216,7 @@ var
             antialias: true
         });
 
+        stage.addChild(debug);
         stage.addChild(layers.bg);
         stage.addChild(layers.mid);
         stage.addChild(layers.fg);

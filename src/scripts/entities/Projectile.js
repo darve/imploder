@@ -10,21 +10,22 @@ module.exports = (function() {
 
     var
         assets = {
-            mid: [{ name: 'mob-mid', url: '/assets/img/mob.png' }]
+            fg: [{ name: 'projectile-fg', url: '/assets/img/projectile.png' }]
         };
 
-    var Mob = function(opts) {
+    var Projectile = function(opts) {
 
         var _ = this;
-        this.type = 'mob';
+        this.type = 'projectile';
 
         this.pos = new Vec(opts.position.x, opts.position.y);
-        this.target = new Vec(opts.target.x, opts.target.y);
+        this.target = opts.target;
         this.diff = this.target.minusNew( this.pos );
-        this.turnspeed = 0.02;
+        this.turnspeed = 0.08;
         this.speed = 4;
-        this.vector = new Vec( 0, -(this.speed));
-        this.health = 100;
+        this.acceleration = 1.02;
+        this.vector = opts.vector.multiplyEq(3);
+        this.lifespan = 300;
 
         this.sprites = {
             bg: [],
@@ -40,8 +41,8 @@ module.exports = (function() {
                 x: 0.5,
                 y: 0.5
             },
-            width: 20,
-            height: 33
+            width: 5,
+            height: 11
         });
 
         for ( var sprite in assets ) {
@@ -56,7 +57,7 @@ module.exports = (function() {
 
     };
 
-    Mob.prototype = {
+    Projectile.prototype = {
         integrate: function() {
 
             var _ = this;
@@ -68,6 +69,10 @@ module.exports = (function() {
                 v.position.y = _.pos.y;
                 v.rotation = _.vector.angle(true)+Math.PI/2;
             });
+
+            if ( this.vector.magnitude() > 20 ) {
+                this.health = 0;
+            }
         },
 
         turn: function() {
@@ -86,7 +91,7 @@ module.exports = (function() {
 
         move: function() {
             // if ( !this.pos.isCloseTo(this.target, 10) ) {
-                this.pos.plusEq( this.vector );
+                this.pos.plusEq( this.vector.multiplyEq(this.acceleration) );
             // } else {
                 // this.health = 0;
             // }
@@ -94,7 +99,7 @@ module.exports = (function() {
     };
 
     return {
-        spawn: Mob,
+        spawn: Projectile,
         assets: assets
     };
 
